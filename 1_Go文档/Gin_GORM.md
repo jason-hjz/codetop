@@ -1,3 +1,204 @@
+[Gin框架笔记网址](https://gitee.com/moxi159753/LearningNotes/tree/master/Golang/Gin框架/1_Gin内容介绍)
+
+### Gin返回JSON
+
+方式一（临时）：
+
+```go
+r := gin.Default()
+
+r.GET("/json", func(c *gin.Context){
+	data := gin.H{"name":"小明", "message":"hello", "age":"18"}
+	c.JSON(http.StatusOK, data)
+})
+```
+
+方式二：
+
+```go
+type msg struct{
+	Name string `json:"name"`
+	Message string
+	Age int
+}
+
+r.GET("/another_json", func(c *gin.Context){
+	data := msg{
+		"小明",
+		"hello",
+		18,
+	}
+	c.JSON(http.StatusOK, data) //json序列化
+})
+```
+
+
+
+### Gin获取querystring参数
+
+`querystring`指的是URL中`?`后面携带的参数，例如：`/user/search?username=小王子&address=沙河`。 获取请求的querystring参数的方法如下：
+
+```go
+func main() {
+	//Default返回一个默认的路由引擎
+	r := gin.Default()
+	r.GET("/user/search", func(c *gin.Context) {
+        // 可以添加默认值
+		username := c.DefaultQuery("username", "小王子")
+		//username := c.Query("username") 获取请求中携带的querystring参数
+		address := c.Query("address")
+		//输出json结果给调用方
+		c.JSON(http.StatusOK, gin.H{
+			"message":  "ok",
+			"username": username,
+			"address":  address,
+		})
+	})
+	r.Run()
+}
+```
+
+我们输入对应的URL，就能获取到对应的参数了
+
+```
+http://localhost:9090/web?username=小王子&address=沙河
+```
+
+
+
+### Gin获取form表单
+
+什么是form表单：
+
+```html
+<!-- 这就是一个标准表单 -->
+<form action="提交地址" method="提交方式">
+  <!-- 输入框：用户名 -->
+  <input type="text" placeholder="请输入用户名">
+  
+  <!-- 密码框 -->
+  <input type="password" placeholder="请输入密码">
+  
+  <!-- 提交按钮 -->
+  <button type="submit">登录</button>
+</form>
+```
+
+关键属性解释：
+
+1. **`<form>`**：表单的**容器**，所有要提交的内容都必须写在里面
+
+2. **action**：数据要提交到的**后台地址**（后端接口）
+
+3. method
+
+   ：提交方式，最常用两种：
+
+   - `get`：数据拼在网址里（搜索、查询用）
+   - `post`：数据隐藏提交（登录、注册、上传文件用）
+
+4. **`<input>`**：用户输入的控件（文本、密码、单选、多选、文件等）
+
+5. **`type="submit"`**：提交按钮，点了就把数据发出去
+
+
+
+请求的数据通过form表单来提交，例如向`/user/search`发送一个POST请求，获取请求数据的方式如下：
+
+```go
+func main() {
+	//Default返回一个默认的路由引擎
+	r := gin.Default()
+	r.POST("/user/search", func(c *gin.Context) {
+		// DefaultPostForm取不到值时会返回指定的默认值
+		//username := c.DefaultPostForm("username", "小王子")获取form表单的值
+		username := c.PostForm("username")
+		address := c.PostForm("address")
+		//输出json结果给调用方
+		c.JSON(http.StatusOK, gin.H{
+			"message":  "ok",
+			"username": username,
+			"address":  address,
+		})
+	})
+	r.Run(":8080")
+}
+```
+
+
+
+### Gin获取path参数
+
+请求的参数通过URL路径传递，例如：`/user/search/小王子/沙河`。 获取请求URL路径中的参数的方式如下。
+
+```go
+func main() {
+	//Default返回一个默认的路由引擎
+	r := gin.Default()
+    // 有多个获取路径的函数时注意url的匹配不要冲突，
+	r.GET("/user/search/:username/:address", func(c *gin.Context) {
+		username := c.Param("username")
+		address := c.Param("address") //Param返回的都是string类型
+		//输出json结果给调用方
+		c.JSON(http.StatusOK, gin.H{
+			"message":  "ok",
+			"username": username,
+			"address":  address,
+		})
+	})
+
+	r.Run(":8080")
+}
+```
+
+
+
+### Gin定义中间件
+
+Gin中的中间件必须是一个`gin.HandlerFunc`类型，即参数为c * gin.Context的函数。
+
+**记录接口耗时的中间件**
+
+例如我们像下面的代码一样定义一个统计请求耗时的中间件。
+
+```go
+// StatCost 是一个统计耗时请求耗时的中间件
+// 这里采用一个闭包，返回一个gin.HandlerFunc类型，即func(c *gin.Context)
+func StatCost() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		start := time.Now()
+		c.Set("name", "小王子") // 可以通过c.Set在请求上下文中设置值，后续的处理函数能够取到该值
+		// 调用该请求的剩余处理程序
+		c.Next()
+		// 不调用该请求的剩余处理程序
+		// c.Abort()
+		// 计算耗时
+		cost := time.Since(start)
+		log.Println(cost)
+	}
+}
+```
+
+
+
+
+
+### GORM教程
+
+https://www.liwenzhou.com/posts/Go/gorm/
+
+
+
+
+
+![image-20260328103704332](D:\Typora\网络图片\image-20260328103704332.png)
+
+
+
+
+
+### GORM查询
+
 - **`FirstOrCreate`**: 查不到就**创建并保存**到数据库。
 - **`FirstOrInit`**: 查不到就**初始化**一个新对象，但**不会保存**，需要你手动调用 `Save()`。
 

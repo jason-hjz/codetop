@@ -73,6 +73,65 @@ defer func(){
         text := scanner.Text()
         fmt.Println("你输入的是：", text)
     }
+
+// 3.读完一行将字符串转换为数组：
+func main() {
+	scanner := bufio.NewScanner(os.Stdin)
+	
+	// 假设输入：10 20 30 40 50
+	if scanner.Scan() {
+		line := scanner.Text() // 1. 读取整行字符串: "10 20 30 40 50"
+		
+		// 2. 按空格切割，得到字符串切片: ["10", "20", "30", "40", "50"]
+		strNums := strings.Fields(line)
+		
+		// 3. 创建一个整数切片来存放结果
+		var nums []int
+		
+		// 4. 遍历字符串切片，逐个转换
+		for _, s := range strNums {
+			val, err := strconv.Atoi(s) // 将 "10" 转为 10
+			if err != nil {
+				fmt.Println("转换错误:", err)
+				continue
+			}
+			nums = append(nums, val)
+		}
+		
+		fmt.Println("得到的整数数组:", nums)
+	}
+}
+
+// 4.输入用其他符号分割的数字：
+func main() {
+	fmt.Println("请输入用逗号分隔的数字 (例如: 1,2,3,4,5):")
+
+	scanner := bufio.NewScanner(os.Stdin)
+	if scanner.Scan() {
+		line := scanner.Text() // 1. 读取整行: "1,2,3,4,5"
+
+		// 2. 按逗号切割
+		// strings.Split 返回一个字符串切片 []string{"1", "2", "3", "4", "5"}
+		strNums := strings.Split(line, ",")
+
+		var nums []int
+
+		// 3. 遍历并转换
+		for _, s := range strNums {
+			// 去除可能存在的首尾空格 (防止用户输入 "1, 2, 3")
+			s = strings.TrimSpace(s) // 去除字符s首尾的空格、\t、\n、\r
+			
+			val, err := strconv.Atoi(s)
+			if err != nil {
+				fmt.Printf("警告: '%s' 不是有效的数字，已跳过\n", s)
+				continue
+			}
+			nums = append(nums, val)
+		}
+
+		fmt.Println("解析后的数组:", nums)
+	}
+}
 ```
 
 %T 打印类型
