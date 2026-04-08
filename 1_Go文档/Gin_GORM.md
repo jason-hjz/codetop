@@ -394,3 +394,40 @@ func main() {
 }
 ```
 
+
+
+### 项目结构：
+
+```
+your-project/
+├── cmd/                  # 项目入口（main 函数）
+│   └── server/
+│       └── main.go       # 启动服务
+├── router/
+│   └── router.go         # 路由注册
+├── api/                  # HTTP/gRPC 接口定义、handler
+├── internal/             # 内部业务逻辑（核心）
+│   ├── service/          # 业务逻辑层
+│   ├── dao/              # 数据访问层（操作 DB/Redis）
+│   ├── model/            # 数据结构、DO/POJO
+│   └── middleware/        # 中间件
+├── pkg/                  # 公共工具包（可被外部引用）
+├── config/               # 配置文件、配置加载
+├── scripts/              # 脚本、构建、部署
+├── go.mod
+└── go.sum
+```
+
+
+
+```
+请求 → api(handler) → service(业务) → dao(数据) → DB/Redis
+```
+
+严格规则：
+
+- handler 不直接调用 dao
+- service 不写 HTTP 逻辑
+- dao 不处理业务
+- model 只存结构
+- pkg 工具谁都能用
