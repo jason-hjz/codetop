@@ -53,6 +53,10 @@ defer func(){
 	fmt.Println("Hello Go")
 	fmt.Println(123, 456, "abc") // 多个值用逗号分隔
 
+// 3. fmt.Sprintf：返回字符串，不打印 fmt.Printf：直接打印到控制台，不返回
+	s := fmt.Sprintf("年龄：%d", 18)
+	fmt.Printf("年龄：%d", 18)
+
 //输入
 // 1. fmt.Scan 遇到空格就会停止
 	fmt.Print("请输入姓名和年龄：")
